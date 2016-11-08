@@ -85,8 +85,8 @@ int main()
 		window.clear(sf::Color(255,255,255));
 		tank.update(elapsed, WIDTH, HEIGHT);
 		window.draw(tank_draw);
-		window.display();
 
+		window.display();
 	}
 
 }
