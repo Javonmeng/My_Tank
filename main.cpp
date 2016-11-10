@@ -1,8 +1,8 @@
 #include <SFML/Graphics.hpp>
 #include "tank.h"
+#include "bullet.hpp"
 #define WIDTH 800
 #define HEIGHT 600
-
 void is_exit(sf::Event &event, sf::RenderWindow &window)
 {
 	//ÅÐ¶ÏÊÇ·ñµã¡Á
@@ -12,53 +12,11 @@ void is_exit(sf::Event &event, sf::RenderWindow &window)
 	if (close || escape)
 		window.close();
 }
-void move_tank(sf::Event &event, Tank &tank)
+void Draw_Tank(Tank &tank,sf::Time elapsed,sf::RenderWindow &window)
 {
-	if (event.type == sf::Event::KeyPressed)
-	{
-		switch (event.key.code)
-		{
-		case sf::Keyboard::Up:
-			tank.forward();
-			break;
-		case sf::Keyboard::Down:
-			tank.back();
-			break;
-		case sf::Keyboard::Left:
-			tank.clockwise();
-			break;
-		case sf::Keyboard::Right:
-			tank.anti_clockwise();
-			break;
-		case sf::Keyboard::Space:
-			tank.speedup();
-			break;
-		default:
-			break;
-		}
-	}
-	if (event.type == sf::Event::KeyReleased)
-	{
-		switch (event.key.code)
-		{
-		case sf::Keyboard::Up:
-			tank.stop_forward();
-			break;
-		case sf::Keyboard::Down:
-			tank.stop_back();
-		case sf::Keyboard::Left:
-			tank.stop_clockwise();
-			break;
-		case sf::Keyboard::Right:
-			tank.stop_anti_clockwise();
-			break;
-		case sf::Keyboard::Space:
-			tank.stop_speedup();
-			break;
-		default:
-			break;
-		}
-	}
+	tank.update(elapsed, window);
+	window.draw(tank);
+	window.draw(tank.gun);
 }
 
 int main()
@@ -66,26 +24,27 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "TANK");
 	sf::Clock clock;
     Tank tank;
-	sf::Texture tank_texture;
-	if (!tank_texture.loadFromFile("tank.png"))
-	{
-		return EXIT_FAILURE;
-	}
-	tank.setTexture(&tank_texture);
-	Tank &tank_draw = tank;
+	Bullet *bullet=NULL;
 	while (window.isOpen())
 	{
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
 			is_exit(event, window);
-			move_tank(event, tank);
+			tank.move_tank(event);
+			if (event.type == sf::Event::MouseButtonPressed)
+			{
+				if (event.mouseButton.button == sf::Mouse::Left)
+				{
+					bullet = new Bullet(tank.fire(window));
+				}
+			}
 		}
 		sf::Time elapsed = clock.restart();
 		window.clear(sf::Color(255,255,255));
-		tank.update(elapsed, WIDTH, HEIGHT);
-		window.draw(tank_draw);
-
+		Draw_Tank(tank,elapsed,window);
+		if(bullet&&bullet->is_exist==true)
+			window.draw(*bullet);
 		window.display();
 	}
 
