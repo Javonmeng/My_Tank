@@ -15,13 +15,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="tank.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="bullet.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="shield.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,8 +35,33 @@
     <ClInclude Include="tank.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="bullet.hpp">
+    <ClInclude Include="Game.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="bullet.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="shield.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="tank.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="gun.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="shield.jpg">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="gamestart.jpg">
+      <Filter>资源文件</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="sansation.ttf">
+      <Filter>资源文件</Filter>
+    </Font>
   </ItemGroup>
 </Project>

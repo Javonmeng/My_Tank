@@ -1,5 +1,6 @@
 #include "tank.h"
 #include "math.h"
+#include <iostream>
 
 void rotateVector(sf::Vector2f &v, float angle)
 {
@@ -67,10 +68,10 @@ float Tank::angle_of_gun(sf::RenderWindow &window)
 	sf::Vector2i localPosition = sf::Mouse::getPosition(window);
 	sf::Vector2i Vector_mouse;
 	sf::Vector2f p = this->getPosition();
-	Vector_mouse.x = localPosition.x - p.x;
-	Vector_mouse.y = localPosition.y - p.y;
+	Vector_mouse.x = float(localPosition.x) - p.x;
+	Vector_mouse.y = float(localPosition.y - p.y);
 	float cosangle;
-	cosangle = -Vector_mouse.y / (sqrt(pow(Vector_mouse.x, 2) + pow(Vector_mouse.y, 2)));
+	cosangle = -Vector_mouse.y*1.0 / (sqrt(pow(Vector_mouse.x, 2) + pow(Vector_mouse.y, 2)));
 	float angle, angle_hudu;
 	angle_hudu = acos(cosangle);
 	angle = angle_hudu * 180 / PI;
@@ -79,13 +80,15 @@ float Tank::angle_of_gun(sf::RenderWindow &window)
 	}
 	return angle;
 }
-void Tank::update(sf::Time elapsed,sf::RenderWindow &window)
+void Tank::update(sf::Time elapsed, sf::RenderWindow &window)
 {
 	float width = window.getSize().x;
 	float height = window.getSize().y;
 	float elapsed_time = elapsed.asSeconds();
 	//update position
-	
+	previous_position = this->getPosition();
+	previous_rotation = this->getRotation();
+
 	if (!(this->forwarding ^ this->backing))
 	{
 		//don't move if orders are contradictory
@@ -101,7 +104,7 @@ void Tank::update(sf::Time elapsed,sf::RenderWindow &window)
 			this->velocity = TANK_VELOCITY * (-1.0f);
 		}
 		float rotation = this->getRotation() TO_RADIAN;
-		rotateVector(this->velocity, rotation);		
+		rotateVector(this->velocity, rotation);
 		sf::Vector2f offset_position = this->velocity * this->tank_speed * elapsed_time;
 		this->move(offset_position);
 
@@ -111,22 +114,22 @@ void Tank::update(sf::Time elapsed,sf::RenderWindow &window)
 		float min_y = min(this->r0.y, this->r1.y, this->r2.y, this->r3.y);
 		float max_x = max(this->r0.x, this->r1.x, this->r2.x, this->r3.x);
 		float max_y = max(this->r0.y, this->r1.y, this->r2.y, this->r3.y);
-	
+
 		if ((p.x + min_x) < 0)
 		{
 			p.x = -min_x;
 		}
 		if ((p.y + min_y) < 0)
 		{
-			p.y = -min_y ;
+			p.y = -min_y;
 		}
 		if ((p.x + max_x) > width)
 		{
 			p.x = width - max_x;
 		}
-		if ((p.y+max_y) > height)
-		{			
-			p.y = height-max_y;
+		if ((p.y + max_y) > height)
+		{
+			p.y = height - max_y;
 		}
 		this->setPosition(p.x, p.y);
 	}
@@ -173,13 +176,114 @@ void Tank::update(sf::Time elapsed,sf::RenderWindow &window)
 		{
 			this->rotate(-angle_velocity * elapsed_time);
 		}
-		
+
 	}
 	sf::Vector2f p = this->getPosition();
 	this->gun.setPosition(p);
 	this->gun.setRotation(this->angle_of_gun(window));
 }
+void Tank::enemy_update(sf::Time elapsed, sf::RenderWindow &window)
+{
+	float width = window.getSize().x;
+	float height = window.getSize().y;
+	float elapsed_time = elapsed.asSeconds();
+	//update position
+	previous_position = this->getPosition();
+	previous_rotation = this->getRotation();
 
+	if (!(this->forwarding ^ this->backing))
+	{
+		//don't move if orders are contradictory
+	}
+	else
+	{
+		if (this->forwarding)
+		{
+			this->velocity = TANK_VELOCITY;
+		}
+		if (this->backing)
+		{
+			this->velocity = TANK_VELOCITY * (-1.0f);
+		}
+		float rotation = this->getRotation() TO_RADIAN;
+		rotateVector(this->velocity, rotation);
+		sf::Vector2f offset_position = this->velocity * this->tank_speed * elapsed_time;
+		this->move(offset_position);
+
+		//stay in window
+		sf::Vector2f p = this->getPosition();
+		float min_x = min(this->r0.x, this->r1.x, this->r2.x, this->r3.x);
+		float min_y = min(this->r0.y, this->r1.y, this->r2.y, this->r3.y);
+		float max_x = max(this->r0.x, this->r1.x, this->r2.x, this->r3.x);
+		float max_y = max(this->r0.y, this->r1.y, this->r2.y, this->r3.y);
+
+		if ((p.x + min_x) < 0)
+		{
+			p.x = -min_x;
+		}
+		if ((p.y + min_y) < 0)
+		{
+			p.y = -min_y;
+		}
+		if ((p.x + max_x) > width)
+		{
+			p.x = width - max_x;
+		}
+		if ((p.y + max_y) > height)
+		{
+			p.y = height - max_y;
+		}
+		this->setPosition(p.x, p.y);
+	}
+	if (this->clockwising ^ this->anti_clockwising)
+	{
+		float angle_velocity = 0.0;
+		if (this->clockwising)
+		{
+			angle_velocity = -50;
+		}
+		if (this->anti_clockwising)
+		{
+			angle_velocity = 50;
+		}
+		this->rotate(angle_velocity * elapsed_time);
+		this->r0 = sf::Vector2f(-TANK_WIDTH / 2, TANK_HEIGHT / 2);
+		this->r1 = sf::Vector2f(TANK_WIDTH / 2, TANK_HEIGHT / 2);
+		this->r2 = sf::Vector2f(TANK_WIDTH / 2, -TANK_HEIGHT / 2);
+		this->r3 = sf::Vector2f(-TANK_WIDTH / 2, -TANK_HEIGHT / 2);
+		float rotation = this->getRotation() TO_RADIAN;
+		rotateVector(this->r0, rotation);//各边矢量旋转计算顶点位置
+		rotateVector(this->r1, rotation);
+		rotateVector(this->r2, rotation);
+		rotateVector(this->r3, rotation);
+		float min_x = min(this->r0.x, this->r1.x, this->r2.x, this->r3.x);
+		float min_y = min(this->r0.y, this->r1.y, this->r2.y, this->r3.y);
+		float max_x = max(this->r0.x, this->r1.x, this->r2.x, this->r3.x);
+		float max_y = max(this->r0.y, this->r1.y, this->r2.y, this->r3.y);
+		sf::Vector2f p = this->getPosition();
+		//这里几项因为图片切割后内容距离边缘有微小距离，可以加一项视觉上的补偿修正
+		if ((p.x + min_x) < 0)
+		{
+			this->rotate(-angle_velocity * elapsed_time);
+		}
+		if ((p.y + min_y) < 0)
+		{
+			this->rotate(-angle_velocity * elapsed_time);
+		}
+		if ((p.x + max_x) > width)
+		{
+			this->rotate(-angle_velocity * elapsed_time);
+		}
+		if ((p.y + max_y) > (height))
+		{
+			this->rotate(-angle_velocity * elapsed_time);
+		}
+
+	}
+	sf::Vector2f p = this->getPosition();
+	this->gun.setPosition(p);
+	//this->gun.setRotation(this->angle_of_gun(window));
+}
 Bullet Tank::fire(sf::RenderWindow &window)
 {
 	Bullet bullet(this->getPosition(), this->angle_of_gun(window));
@@ -194,15 +298,19 @@ void Tank::move_tank(sf::Event &event)
 		switch (event.key.code)
 		{
 		case sf::Keyboard::Up:
+			//case sf::Keyboard::W:
 			this->forward();
 			break;
 		case sf::Keyboard::Down:
+			//case sf::Keyboard::S:
 			this->back();
 			break;
 		case sf::Keyboard::Left:
+			//case sf::Keyboard::A:
 			this->clockwise();
 			break;
 		case sf::Keyboard::Right:
+			//case sf::Keyboard::D:
 			this->anti_clockwise();
 			break;
 		case sf::Keyboard::Space:
@@ -235,10 +343,52 @@ void Tank::move_tank(sf::Event &event)
 		}
 	}
 }
+
+float Tank::enemy_fire_angle(sf::Vector2f vector)
+{
+	float cosangle;
+	cosangle = -vector.y / (sqrt(pow(vector.x, 2) + pow(vector.y, 2)));
+	float angle, angle_hudu;
+	angle_hudu = acos(cosangle);
+	angle = angle_hudu * 180 / PI;
+	if (vector.x < 0) {
+		angle = 360 - angle;
+	}
+	return angle;
+}
+
+Bullet Tank::enemy_fire2tank(Tank tank)
+{
+	sf::Vector2f tank_pos = tank.getPosition();
+	float angle = enemy_fire_angle(tank_pos - this->getPosition());
+	this->gun.setRotation(angle);
+	Bullet bullet(this->getPosition(), angle);
+	bullet.is_exist = true;
+	return bullet;
+}
+void Tank::enemy_move(int seed)
+{
+	//struct timespec tp;
+	//clock_gettime(CLOCK_THREAD_CPUTIME_ID, &tp);
+	//(tp.tv_nsec);
+	
+	//long time = clock.getElapsedTime().asSeconds();
+	//cout << time << endl;
+	srand(seed*(int)time(0));
+	int state[4] = { 0 };
+	for (int i = 0; i < 4; i++)
+	{
+		state[i] = random(2);
+	}
+	this->forwarding = bool(state[0]);
+	this->backing = bool(state[1]);
+	this->clockwising = bool(state[2]);
+	this->anti_clockwising = bool(state[3]);
+}
 float distance(sf::Vector2f point, sf::Vector2f point1, sf::Vector2f point2)
 {//计算返回点point到point1的距离加上到point2的距离
 	return sqrt((point.x - point1.x)*(point.x - point1.x) + (point.y - point1.y)*(point.y - point1.y))
-			+ sqrt((point.x - point2.x)*(point.x - point2.x) + (point.y - point2.y)*(point.y - point2.y));
+		+ sqrt((point.x - point2.x)*(point.x - point2.x) + (point.y - point2.y)*(point.y - point2.y));
 }
 void Tank::bullet_collision(Bullet &bullet)
 {//检测与子弹的碰撞修改tank是否存活,子弹是否消失
@@ -248,11 +398,21 @@ void Tank::bullet_collision(Bullet &bullet)
 	sf::Vector2f vertex2 = p_tank + this->r2;
 	sf::Vector2f vertex3 = p_tank + this->r3;
 	sf::Vector2f p_bullet = bullet.getPosition();
-	if (distance(p_bullet, vertex0, vertex1) <= TANK_WIDTH || distance(p_bullet, vertex2, vertex3) <= TANK_WIDTH
-		|| distance(p_bullet,vertex1, vertex2) <= TANK_HEIGHT || distance(p_bullet, vertex3, vertex0) <= TANK_HEIGHT)
+	if (distance(p_bullet, vertex0, vertex1) <= (TANK_WIDTH + 6) || distance(p_bullet, vertex2, vertex3) <= (TANK_WIDTH + 6)
+		|| distance(p_bullet, vertex1, vertex2) <= (TANK_HEIGHT + 6) || distance(p_bullet, vertex3, vertex0) <= (TANK_HEIGHT + 6))
 	{
 		this->is_exist = false;
 		bullet.is_exist = false;
 	}
-		
+
+}
+void Tank::tank_collison(Tank other_tank)
+{
+	sf::Vector2f vector = this->getPosition() - other_tank.getPosition();
+	float distance = sqrt(vector.x*vector.x + vector.y*vector.y);
+	if (distance < 2 * sqrt(TANK_WIDTH*TANK_WIDTH + TANK_HEIGHT*TANK_HEIGHT))
+	{//相撞都认为撞毁
+		this->is_exist = false;
+		other_tank.is_exist = false;
+	}
 }

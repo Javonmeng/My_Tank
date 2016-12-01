@@ -1,51 +1,62 @@
-#include <SFML/Graphics.hpp>
-#include "tank.h"
-#include "bullet.hpp"
-#define WIDTH 800
-#define HEIGHT 600
-void is_exit(sf::Event &event, sf::RenderWindow &window)
-{
-	//≈–∂œ «∑Òµ„°¡
-	bool close = (event.type == sf::Event::Closed);
-	//≈–∂œ «∑Ò∞¥ESC
-	bool escape = (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape);
-	if (close || escape)
-		window.close();
-}
-void Draw_Tank(Tank &tank,sf::Time elapsed,sf::RenderWindow &window)
-{
-	tank.update(elapsed, window);
-	window.draw(tank);
-	window.draw(tank.gun);
-}
+Ôªø//#include "stdafx.h"
+//#include<SFML/Graphics.hpp>
 
-int main()
-{
-	sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "TANK");
-	sf::Clock clock;
-    Tank tank;
-	Bullet *bullet=NULL;
-	while (window.isOpen())
-	{
-		sf::Event event;
+
+#include <SFML/Graphics.hpp>
+#include "Game.h"
+
+
+
+void start_game(sf::RenderWindow &window) {
+	sf::Event event;
+	sf::Texture startgame_texture;
+	if (!startgame_texture.loadFromFile("./resource/gamestart.jpg")) {
+		return;
+	}
+	sf::Sprite startgame_sprite(startgame_texture);
+
+
+
+	window.draw(startgame_sprite);
+	window.display();
+
+	bool flag = true;
+
+	while (window.isOpen() && flag) {
 		while (window.pollEvent(event))
 		{
-			is_exit(event, window);
-			tank.move_tank(event);
+			bool close = (event.type == sf::Event::Closed);
+			//‚âà‚Äì‚àÇ≈ì¬†¬´‚àë√í‚àû¬•ESC
+			bool escape = (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape);
+			if (close || escape)
+				window.close();
+
+
 			if (event.type == sf::Event::MouseButtonPressed)
 			{
 				if (event.mouseButton.button == sf::Mouse::Left)
 				{
-					bullet = new Bullet(tank.fire(window));
+					flag = false;
+					break;
 				}
 			}
 		}
-		sf::Time elapsed = clock.restart();
-		window.clear(sf::Color(255,255,255));
-		Draw_Tank(tank,elapsed,window);
-		if(bullet&&bullet->is_exist==true)
-			window.draw(*bullet);
-		window.display();
-	}
 
+	}
 }
+
+
+int main() {
+	sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "TANK");
+
+
+	start_game(window);
+
+	Game game(window);
+
+
+	return 0;
+}
+
+
+

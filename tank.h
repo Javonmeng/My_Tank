@@ -1,7 +1,9 @@
 #pragma once
 #include <SFML/Graphics.hpp>
-#include "bullet.hpp"
+#include "bullet.h"
 #include <iostream>
+#include<time.h>
+#define random(x) (rand()%x)
 #define TANK_WIDTH 50
 #define TANK_HEIGHT 50
 #define TANK_VELOCITY sf::Vector2f(0.0,-1.0)
@@ -14,9 +16,9 @@ class Tank : public sf::RectangleShape
 public:
 	Tank() :RectangleShape(sf::Vector2f(TANK_WIDTH, TANK_HEIGHT))
 	{
-		
-		this->tank_texture.loadFromFile("tank.png");
-		this->gun_texture.loadFromFile("gun.png");
+
+		this->tank_texture.loadFromFile("./resource/tank.png");
+		this->gun_texture.loadFromFile("./resource/gun.png");
 		this->setPosition(50, 50);
 		this->setOrigin(TANK_WIDTH / 2, TANK_HEIGHT / 2);
 		this->velocity = TANK_VELOCITY;
@@ -44,14 +46,20 @@ public:
 	void speedup();
 	void stop_speedup();
 public:
-//	float getRadius();
+	//	float getRadius();
 public:
-
-	Bullet Tank::fire(sf::RenderWindow &window);
-	void Tank::move_tank(sf::Event &event);
-	void Tank::update(sf::Time elapsed,sf::RenderWindow &window);
-	void Tank::bullet_collision(Bullet &bullet);
-	float Tank::angle_of_gun(sf::RenderWindow &window);
+	sf::Vector2f previous_position;
+	float previous_rotation;
+	Bullet fire(sf::RenderWindow &window);
+	void move_tank(sf::Event &event);
+	float enemy_fire_angle(sf::Vector2f vector);
+	Bullet enemy_fire2tank(Tank tank);
+	void enemy_move(int seed);
+	void enemy_update(sf::Time elapsed, sf::RenderWindow &window);
+	void update(sf::Time elapsed, sf::RenderWindow &window);
+	void bullet_collision(Bullet &bullet);
+	void tank_collison(Tank other_tank);
+	float angle_of_gun(sf::RenderWindow &window);
 private:
 	float tank_speed = 200.f;
 	bool forwarding = false;
@@ -63,9 +71,9 @@ private:
 	sf::Vector2f r1;
 	sf::Vector2f r2;
 	sf::Vector2f r3;
-	bool is_exist = true;
 	sf::Texture gun_texture;
 	sf::Texture tank_texture;
 public:
+	bool is_exist = true;
 	sf::Sprite gun;
 };
