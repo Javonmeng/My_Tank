@@ -108,6 +108,7 @@ void Tank::update(sf::Time elapsed, sf::RenderWindow &window)
 		sf::Vector2f offset_position = this->velocity * this->tank_speed * elapsed_time;
 		this->move(offset_position);
 
+
 		//stay in window
 		sf::Vector2f p = this->getPosition();
 		float min_x = min(this->r0.x, this->r1.x, this->r2.x, this->r3.x);
@@ -138,11 +139,11 @@ void Tank::update(sf::Time elapsed, sf::RenderWindow &window)
 		float angle_velocity = 0.0;
 		if (this->clockwising)
 		{
-			angle_velocity = -50;
+			angle_velocity = -rotate_speed;
 		}
 		if (this->anti_clockwising)
 		{
-			angle_velocity = 50;
+			angle_velocity = rotate_speed;
 		}
 		this->rotate(angle_velocity * elapsed_time);
 		this->r0 = sf::Vector2f(-TANK_WIDTH / 2, TANK_HEIGHT / 2);
@@ -284,6 +285,7 @@ void Tank::enemy_update(sf::Time elapsed, sf::RenderWindow &window)
 	this->gun.setPosition(p);
 	//this->gun.setRotation(this->angle_of_gun(window));
 }
+
 Bullet Tank::fire(sf::RenderWindow &window)
 {
 	Bullet bullet(this->getPosition(), this->angle_of_gun(window));
@@ -291,25 +293,110 @@ Bullet Tank::fire(sf::RenderWindow &window)
 	return bullet;
 }
 
+void Tank::move_tank_bymouse_check() {
+	sf::Vector2f tankPosition = this->getPosition();
+	sf::Vector2f b;
+	float length = sqrt((mousePosition.x - tankPosition.x)*(mousePosition.x - tankPosition.x) + (mousePosition.y - tankPosition.y)*(mousePosition.y - tankPosition.y));
+
+	if (length < 20) {
+		this->stop_back();
+		this->stop_forward();
+		this->stop_speedup();
+		this->stop_clockwise();
+		this->stop_anti_clockwise();
+		return;
+	}
+
+	b.x = (mousePosition.x - tankPosition.x) / length;
+	b.y = (mousePosition.y - tankPosition.y) / length;
+	float cos_mouse_tank_angle = b.x*velocity.x + b.y*velocity.y;
+
+	if (cos_mouse_tank_angle > 0.9999) {
+		this->stop_clockwise();
+		this->stop_anti_clockwise();
+	}
+
+}
+
+void Tank::move_tank_bymouse(sf::Event &event, sf::RenderWindow &window) {
+
+	if (event.type == sf::Event::MouseButtonPressed)
+	{
+		if (event.mouseButton.button == sf::Mouse::Right)
+		{
+			this->stop_back();
+			this->stop_forward();
+			this->stop_speedup();
+			this->stop_clockwise();
+			this->stop_anti_clockwise();
+
+			sf::Vector2f tankPosition = this->getPosition();
+			sf::Vector2f b;
+			sf::Vector2i mousePosition_i = sf::Mouse::getPosition(window);
+			mousePosition.x = (float)mousePosition_i.x;
+			mousePosition.y = (float)mousePosition_i.y;
+
+			float length = sqrt((mousePosition.x - tankPosition.x)*(mousePosition.x - tankPosition.x) + (mousePosition.y - tankPosition.y)*(mousePosition.y - tankPosition.y));
+			b.x = (mousePosition.x - tankPosition.x) / length;
+			b.y = (mousePosition.y - tankPosition.y) / length;
+			float cos_mouse_tank_angle = b.x*velocity.x + b.y*velocity.y;
+
+			printf("%f\n", cos_mouse_tank_angle);
+			if (cos_mouse_tank_angle < 0) {
+				head_move = !head_move;
+				velocity.x = -velocity.x;
+				velocity.y = -velocity.y;
+			}
+			//head move
+			if (head_move) {
+
+				this->forward();
+				float jugde_clockwise = b.x*velocity.y - b.y*velocity.x;
+
+				if (jugde_clockwise < 0) {
+					this->anti_clockwise();
+				}
+				else { this->clockwise(); }
+
+			}
+
+			else {
+				this->back();
+				float jugde_clockwise = b.x*velocity.y - b.y*velocity.x;
+
+				if (jugde_clockwise < 0) {
+					this->anti_clockwise();
+				}
+				else { this->clockwise(); }
+			}
+
+		}
+	}
+
+
+
+}
+
 void Tank::move_tank(sf::Event &event)
 {
+	printf("%f,%f\n", velocity.x, velocity.y);
 	if (event.type == sf::Event::KeyPressed)
 	{
 		switch (event.key.code)
 		{
-		case sf::Keyboard::Up:
+		case sf::Keyboard::W:
 			//case sf::Keyboard::W:
 			this->forward();
 			break;
-		case sf::Keyboard::Down:
+		case sf::Keyboard::S:
 			//case sf::Keyboard::S:
 			this->back();
 			break;
-		case sf::Keyboard::Left:
+		case sf::Keyboard::A:
 			//case sf::Keyboard::A:
 			this->clockwise();
 			break;
-		case sf::Keyboard::Right:
+		case sf::Keyboard::D:
 			//case sf::Keyboard::D:
 			this->anti_clockwise();
 			break;
@@ -324,15 +411,15 @@ void Tank::move_tank(sf::Event &event)
 	{
 		switch (event.key.code)
 		{
-		case sf::Keyboard::Up:
+		case sf::Keyboard::W:
 			this->stop_forward();
 			break;
-		case sf::Keyboard::Down:
+		case sf::Keyboard::S:
 			this->stop_back();
-		case sf::Keyboard::Left:
+		case sf::Keyboard::A:
 			this->stop_clockwise();
 			break;
-		case sf::Keyboard::Right:
+		case sf::Keyboard::D:
 			this->stop_anti_clockwise();
 			break;
 		case sf::Keyboard::Space:
@@ -347,7 +434,7 @@ void Tank::move_tank(sf::Event &event)
 float Tank::enemy_fire_angle(sf::Vector2f vector)
 {
 	float cosangle;
-	cosangle = -vector.y / (sqrt(pow(vector.x, 2) + pow(vector.y, 2)));
+	cosangle = -vector.y / (sqrt(vector.x*vector.x + vector.y*vector.y));
 	float angle, angle_hudu;
 	angle_hudu = acos(cosangle);
 	angle = angle_hudu * 180 / PI;
@@ -368,12 +455,6 @@ Bullet Tank::enemy_fire2tank(Tank tank)
 }
 void Tank::enemy_move(int seed)
 {
-	//struct timespec tp;
-	//clock_gettime(CLOCK_THREAD_CPUTIME_ID, &tp);
-	//(tp.tv_nsec);
-	
-	//long time = clock.getElapsedTime().asSeconds();
-	//cout << time << endl;
 	srand(seed*(int)time(0));
 	int state[4] = { 0 };
 	for (int i = 0; i < 4; i++)
@@ -406,11 +487,11 @@ void Tank::bullet_collision(Bullet &bullet)
 	}
 
 }
-void Tank::tank_collison(Tank other_tank)
+void Tank::tank_collison(Tank &other_tank)
 {
 	sf::Vector2f vector = this->getPosition() - other_tank.getPosition();
 	float distance = sqrt(vector.x*vector.x + vector.y*vector.y);
-	if (distance < 2 * sqrt(TANK_WIDTH*TANK_WIDTH + TANK_HEIGHT*TANK_HEIGHT))
+	if (distance < 2 * sqrt(TANK_WIDTH*TANK_WIDTH / 4 + TANK_HEIGHT*TANK_HEIGHT / 4))
 	{//相撞都认为撞毁
 		this->is_exist = false;
 		other_tank.is_exist = false;

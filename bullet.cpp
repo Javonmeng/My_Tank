@@ -32,7 +32,7 @@ void Bullet::reset_collision() {
 	vertical_collsion = false;
 }
 
-void Bullet::update(sf::Time elapsed)
+void Bullet::update(sf::Time elapsed, sf::Sound &knocksound)
 {
 	//  float elapsed_time = elapsed.asSeconds();
 	//update position
@@ -50,29 +50,29 @@ void Bullet::update(sf::Time elapsed)
 	if (next_position.x <= left_side || next_position.x >= right_side) {
 		bullet_v.x = -bullet_v.x;
 		dx = -dx;
+		knocksound.play();
 	}
 	if (next_position.y >= down_side || next_position.y <= up_side) {
 		bullet_v.y = -bullet_v.y;
 		dy = -dy;
+		knocksound.play();
 	}
 
 
 	if (horizontal_collision)
 	{
 		bullet_v.y = -bullet_v.y;
+		knocksound.play();
 	}
 	if (vertical_collsion)
 	{
 		bullet_v.x = -bullet_v.x;
+		knocksound.play();
 	}
 
 	//collsion_check(image);
 
 	this->move(dx, dy);
-
-
-
-
 
 }
 
@@ -82,23 +82,23 @@ void Bullet::collsion_check(sf::Image image) {
 
 	sf::Vector2f p = this->getPosition();
 	/*
-	// ä¸Š
+	// ÉÏ
 
 	up_point.x=p.x;
 	up_point.y=p.y-r;
 
-	//ä¸‹
+	//ÏÂ
 
 	down_point.x=p.x;
 	down_point.y=p.y+r;
-	//å·¦
+	//×ó
 
 	left_point.x=p.x-r;
 	left_point.y=p.y;
 
 
 
-	//å³
+	//ÓÒ
 	right_point.x=p.x+r;
 	right_point.y=p.y;
 	*/
@@ -147,4 +147,34 @@ void Bullet::bullet_collision_check(Bullet *bullet) {
 	}
 
 }
+
+/*
+
+void Bullet::Draw_Bullet(sf::RenderWindow &window){
+//    Get_Next_Position();
+//   this->setPosition(x, y);
+
+}
+void Bullet::Run_Bullet(){
+CircleShape bullet_shape;
+bullet_shape.setRadius(5);
+bullet_shape.setFillColor(sf::Color::Green);
+sf::RenderWindow window(sf::VideoMode(800, 600), "bullet!");
+sf::Clock clock;
+sf::Time run_time = sf::seconds(t);
+while (window.isOpen())
+{
+if (clock.getElapsedTime() >= run_time){
+//           bullet_shape.setPosition(x, y);
+window.clear();
+window.draw(bullet_shape);
+window.display();
+//bullet.Get_Next_Position(bullet.x, bullet.y, bullet.vx, bullet.vy);
+//	printf("%d,%d,%d,%d,%f\n", bullet.x, bullet.y, bullet.vx, bullet.vy, t);
+clock.restart();
+}
+
+}
+}
+*/
 

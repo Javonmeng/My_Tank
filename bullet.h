@@ -2,10 +2,11 @@
 #define bullet_hpp
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <math.h>
 #define PI 3.1415926
 
-#define SPEED 500
+#define SPEED 350
 #define BULLET_Radius 5
 #define gun_length 25
 
@@ -33,8 +34,8 @@ public:
 		sf::Vector2f position_bullet;
 		float angle_hudu;
 		angle_hudu = angle*PI / 180;
-		position_bullet.x = position.x + (gun_length + 15) * sin(angle_hudu);
-		position_bullet.y = position.y - (gun_length + 15)* cos(angle_hudu);
+		position_bullet.x = position.x + (gun_length + 5) * sin(angle_hudu);
+		position_bullet.y = position.y - (gun_length + 5)* cos(angle_hudu);
 
 		this->setPosition(position_bullet);
 		bullet_v.x = SPEED*sin(angle_hudu);
@@ -49,7 +50,7 @@ public:
 	void vertical_collide();
 	void reset_collision();
 
-	void update(sf::Time elapsed);
+	void update(sf::Time elapsed, sf::Sound &knocksound);
 
 
 

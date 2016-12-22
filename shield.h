@@ -23,11 +23,11 @@ class Shield
 public:
 	Shield(unsigned int category);
 
-	float a_position_x = 400;
-	float a_position_y = 300;
+	float a_position_x = 0;
+	float a_position_y = 0;
 
 	sf::Sprite *map_array[20];
-	float shield_position_array[5][2] = { { 4,4 },{ 0,0 },{ 0,50 },{ 50,50 },{ 100,50 } };
+	float shield_position_array[17][2] = { { 16,16 },{ 100,100 },{ 100,150 },{ 150,150 },{ 200,150 },{ 600,100 },{ 650,100 },{ 650,150 },{ 100,350 },{ 150,350 },{ 150,400 },{ 150,450 },{ 100,450 },{ 550,450 },{ 600,400 },{ 600,450 },{ 650,450 } };
 
 private:
 
@@ -48,12 +48,8 @@ public:
 public:
 	void create_map_A();
 	void setshape_B();
-	void check_collsion_with_bullet(Bullet &bullet, float position_x, float position_y);
-	void check_collsion_with_tank(Tank &tank, float position_x, float position_y); //   void setshape_C();
-																				   //   void setshape_Cup();
-																				   //   void setshape_Cdown();
-																				   //   void setshape_Cleft();
-																				   //   void setshape_Cright();
+	void check_collsion_with_bullet(Bullet &bullet, float position_x, float position_y, sf::Sound &knocksound);
+	void check_collsion_with_tank(Tank &tank, float position_x, float position_y);
 
 
 };
