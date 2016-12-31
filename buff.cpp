@@ -10,26 +10,26 @@ Buff::Buff(int type) :RectangleShape(sf::Vector2f(BUFF_WIDTH, BUFF_HEIGHT)) {
 	//type=(rand() % (TYPE_MAX - TYPE_MIN + 1)) + TYPE_MIN;
 	if (type == 1)
 	{
-		this->buff_texture.loadFromFile("./resources/star.png");
+		this->buff_texture.loadFromFile("./resources/clean_bullets.png");
 		//this->setFillColor(sf::Color::Blue);
 		this->type = type;
 	}
 	if (type == 2)
 	{
-		this->buff_texture.loadFromFile("./resources/life.png");
+		this->buff_texture.loadFromFile("./resources/add_life.png");
 		//this->setFillColor(sf::Color::Red);
 		this->type = type;
 	}
 	if (type == 3)
 	{
-		this->buff_texture.loadFromFile("./resources/boom.png");
+		this->buff_texture.loadFromFile("./resources/clean_tanks.png");
 		//this->setFillColor(sf::Color::Yellow);
 		this->type = type;
 	}
-	this->setTexture(&buff_texture);
+
 	this->setPosition(buff_position.x, buff_position.y);
 	this->setOrigin(BUFF_WIDTH / 2, BUFF_HEIGHT / 2);
-
+	this->setTexture(&buff_texture);
 }
 
 int Buff::tank_buff_collision(Tank *tank) {

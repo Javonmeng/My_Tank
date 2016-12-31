@@ -30,7 +30,7 @@ public:
 
 	Bullet(sf::Vector2f position, float angle) {
 		this->setRadius(BULLET_Radius);
-		this->setFillColor(sf::Color::Green);
+		this->setFillColor(sf::Color(184, 17, 57));
 		sf::Vector2f position_bullet;
 		float angle_hudu;
 		angle_hudu = angle*PI / 180;

@@ -82,23 +82,23 @@ void Bullet::collsion_check(sf::Image image) {
 
 	sf::Vector2f p = this->getPosition();
 	/*
-	// ио
+	// ??
 
 	up_point.x=p.x;
 	up_point.y=p.y-r;
 
-	//об
+	//??
 
 	down_point.x=p.x;
 	down_point.y=p.y+r;
-	//вС
+	//║а╗╝
 
 	left_point.x=p.x-r;
 	left_point.y=p.y;
 
 
 
-	//ср
+	//??
 	right_point.x=p.x+r;
 	right_point.y=p.y;
 	*/

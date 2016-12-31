@@ -18,8 +18,8 @@ public:
 	Tank() :RectangleShape(sf::Vector2f(TANK_WIDTH, TANK_HEIGHT))
 	{
 
-		this->tank_texture.loadFromFile("./resources/tank.png");
-		this->gun_texture.loadFromFile("./resources/gun.png");
+		this->tank_texture.loadFromFile("./resources/enemy_tank.png");
+		this->gun_texture.loadFromFile("./resources/enemy_gun.png");
 		this->setPosition(50, 50);
 		this->setOrigin(TANK_WIDTH / 2, TANK_HEIGHT / 2);
 		this->velocity = TANK_VELOCITY;
@@ -31,7 +31,7 @@ public:
 		this->setTexture(&tank_texture);
 		this->gun.setTexture(gun_texture);
 		this->gun.setTextureRect(sf::IntRect(0, 0, 22, 25));
-		this->gun.setOrigin(sf::Vector2f(21.5, 22.5));
+		this->gun.setOrigin(sf::Vector2f(19.5, 22.5));
 		this->gun.setScale(sf::Vector2f(0.7f, 0.7f));
 		this->gun.setPosition(this->getPosition());
 	}
@@ -65,7 +65,7 @@ public:
 	float angle_of_gun(sf::RenderWindow &window);
 private:
 	float tank_speed = 200.f;
-	float rotate_speed = 300;
+	float rotate_speed = 500;
 	bool forwarding = false;
 	bool backing = false;
 	bool clockwising = false;

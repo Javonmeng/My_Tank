@@ -341,7 +341,6 @@ void Tank::move_tank_bymouse(sf::Event &event, sf::RenderWindow &window) {
 			b.y = (mousePosition.y - tankPosition.y) / length;
 			float cos_mouse_tank_angle = b.x*velocity.x + b.y*velocity.y;
 
-			printf("%f\n", cos_mouse_tank_angle);
 			if (cos_mouse_tank_angle < 0) {
 				head_move = !head_move;
 				velocity.x = -velocity.x;
