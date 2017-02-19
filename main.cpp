@@ -7,26 +7,34 @@
 
 
 int main() {
-	sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "TANK", sf::Style::Close);
-	sf::Image window_ico;
-	window_ico.loadFromFile("./resources/tank_24px.png");
-	const sf::Uint8* window_ico_pixels = window_ico.getPixelsPtr();
-	window.setIcon(24, 24, window_ico_pixels);
+	sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "TANK");
 	Game *game = new Game();
 	game->delete_game();
+
+	int level = 0;
+	int highest_level = 0;
+	bool score_flag;
 
 	while (window.isOpen()) {
 
 		//game->start_game(window);
 
-		for (int i = 0; i < 3; i++) {
-			game->next_game(window, i);
-			bool pass = game->play_game(window, i);
+		for (level = highest_level; level < MAX_LEVEL; level++) {
+			game->next_game(window, level, score_flag);
+			score_flag = false;
+			bool pass = game->play_game(window, level);
 			if (!pass) {
+				score_flag = true;
 				break;
 			}
 		}
+		highest_level = level;
 
+		if (level == MAX_LEVEL) {
+			game->pass_game(window);
+			game->previous_score = 0;
+			highest_level = 0;
+		}
 
 		game->delete_game();
 

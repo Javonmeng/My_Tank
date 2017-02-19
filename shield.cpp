@@ -4,29 +4,76 @@
 
 
 Shield::Shield(int category) {
+	int number, x, y;
+	srand((unsigned)time(0));
+	number = MIN + rand() % (MAX - MIN + 1);
+
+	for (int i = 0; i < 16; i++) {
+		for (int j = 0; j<12; j++) {
+			shield_flag[i][j] = false;
+		}
+	}
+
+	for (int i = 0; i < number; ) {
+		x = rand() % 16;
+		y = rand() % 12;
+		if (shield_flag[x][y] == true) {
+			continue;
+		}
+
+		//tank_creat_position
+		if (x >= 5 && x <= 9 && y >= 9 && y <= 11) {
+			continue;
+		}
+
+		shield_flag[x][y] = true;
+		i++;
+	}
+
+	level_shield[0][0] = number;
+	level_shield[0][1] = number;
+
+	int count = 1;
+	for (int i = 0; i < 16; i++) {
+		for (int j = 0; j<12; j++) {
+			if (shield_flag[i][j] == true) {
+				level_shield[count][0] = i * 50;
+				level_shield[count][1] = j * 50;
+				count++;
+			}
+		}
+	}
+
+	shield_position_array = &level_shield[0][0];
+
+
+	/*
 	switch (category) {
 	case 0:
-		//            ConvexShape(6);
-		create_map_A();
-		break;
+	//            ConvexShape(6);
+	create_map_A();
+	break;
 	case 1:
-		//            ConvexShape(8);
-		create_map_B();
-		break;
+	//            ConvexShape(8);
+	create_map_B();
+	break;
 	case 2:
-		//            ConvexShape(6);
-		create_map_C();
-		break;
+	//            ConvexShape(6);
+	create_map_C();
+	break;
 
 
 	default:
-		break;
+	break;
 	}
+	*/
 }
 
-void Shield::create_map_A() { shield_position_array = &level_0_shield[0][0]; }
-void Shield::create_map_B() { shield_position_array = &level_1_shield[0][0]; }
-void Shield::create_map_C() { shield_position_array = &level_2_shield[0][0]; }
+/*
+void Shield::create_map_A(){shield_position_array = &level_0_shield[0][0];}
+void Shield::create_map_B(){shield_position_array = &level_1_shield[0][0];}
+void Shield::create_map_C(){shield_position_array = &level_2_shield[0][0];}
+*/
 
 void Shield::check_collsion_with_bullet(Bullet &bullet, float position_x, float position_y, sf::Sound &knocksound) {
 	sf::Vector2f centre_A, bullet_position;
@@ -223,6 +270,7 @@ void Shield::check_collsion_with_tank(Tank &tank, float position_x, float positi
 		float dx = (right_up_point.x - left_up_point.x) / 9;
 		//        float x,y;
 
+		int distance_limit = 26;
 
 		for (int i = 0; i<10; i++) {
 			x = left_up_point.x + dx*i;
@@ -231,12 +279,57 @@ void Shield::check_collsion_with_tank(Tank &tank, float position_x, float positi
 			x = x - centre_A.x;
 			y = y - centre_A.y;
 
-			if (x<27 && x>-27 && y<27 && y>-27) {
+			if (x<distance_limit && x>-distance_limit && y<distance_limit && y>-distance_limit) {
 				tank.setPosition(tank.previous_position.x, tank.previous_position.y);
-				tank.setRotation(tank.previous_rotation);
+				//	tank.setRotation(tank.previous_rotation);
+				k = (right_up_point.y - left_up_point.y) / (right_up_point.x - left_up_point.x);
+				dx = (right_up_point.x - left_up_point.x) / 9;
+				for (int i = 0; i<10; i++) {
+					x = left_up_point.x + dx*i;
+					y = k*(x - left_up_point.x) + left_up_point.y;
+
+					x = x - centre_A.x;
+					y = y - centre_A.y;
+					if (x<distance_limit && x>-distance_limit && y<distance_limit && y>-distance_limit) {
+						tank.setRotation(tank.previous_rotation);
+						break;
+					}
+				}
+				k = (right_down_point.y - left_down_point.y) / (right_down_point.x - left_down_point.x);
+				dx = (right_down_point.x - left_down_point.x) / 9;
+				x = left_down_point.x + dx*i;
+				y = k*(x - left_down_point.x) + left_down_point.y;
+
+				x = x - centre_A.x;
+				y = y - centre_A.y;
+				for (int i = 0; i<10; i++) {
+					x = left_up_point.x + dx*i;
+					y = k*(x - left_up_point.x) + left_up_point.y;
+
+					x = x - centre_A.x;
+					y = y - centre_A.y;
+					if (x<distance_limit && x>-distance_limit && y<distance_limit && y>-distance_limit) {
+						tank.setRotation(tank.previous_rotation);
+						break;
+					}
+				}
 				break;
 			}
 
+			/*
+			if (x<27 && x>-27 && y<27 && y>-27) {
+			if (x>26 || x < -26) {
+			tank.setPosition(tank.previous_position.x, tank_position.y);
+
+			}
+			else if (y>26 || y<-26) {
+			tank.setPosition(tank_position.x, tank.previous_position.y);
+			}
+
+			//tank.setRotation(tank.previous_rotation);
+			break;
+			}
+			*/
 		}
 
 
@@ -254,12 +347,42 @@ void Shield::check_collsion_with_tank(Tank &tank, float position_x, float positi
 			x = x - centre_A.x;
 			y = y - centre_A.y;
 
-			if (x<27 && x>-27 && y<27 && y>-27) {
+			if (x<distance_limit && x>-distance_limit && y<distance_limit && y>-distance_limit) {
 				tank.setPosition(tank.previous_position.x, tank.previous_position.y);
-				tank.setRotation(tank.previous_rotation);
+				//	tank.setRotation(tank.previous_rotation);
+				k = (right_up_point.y - left_up_point.y) / (right_up_point.x - left_up_point.x);
+				dx = (right_up_point.x - left_up_point.x) / 9;
+				for (int i = 0; i<10; i++) {
+					x = left_up_point.x + dx*i;
+					y = k*(x - left_up_point.x) + left_up_point.y;
+
+					x = x - centre_A.x;
+					y = y - centre_A.y;
+					if (x<distance_limit && x>-distance_limit && y<distance_limit && y>-distance_limit) {
+						tank.setRotation(tank.previous_rotation);
+						break;
+					}
+				}
+				k = (right_down_point.y - left_down_point.y) / (right_down_point.x - left_down_point.x);
+				dx = (right_down_point.x - left_down_point.x) / 9;
+				x = left_down_point.x + dx*i;
+				y = k*(x - left_down_point.x) + left_down_point.y;
+
+				x = x - centre_A.x;
+				y = y - centre_A.y;
+				for (int i = 0; i<10; i++) {
+					x = left_up_point.x + dx*i;
+					y = k*(x - left_up_point.x) + left_up_point.y;
+
+					x = x - centre_A.x;
+					y = y - centre_A.y;
+					/*if (x<distance_limit && x>-distance_limit && y<distance_limit && y>-distance_limit) {
+						tank.setRotation(tank.previous_rotation);
+						break;
+					}*/
+				}
 				break;
 			}
-
 		}
 
 

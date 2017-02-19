@@ -7,14 +7,14 @@ int current_score = 0;
 int highest_score = 0;
 int mytank_life = 1;
 
-int goal[3] = { 200,500,1200 };
+bool pausing = false;
+bool stop_pausing = false;
 
+//int goal[3]={200,500,1200};
+int goal[MAX_LEVEL] = { 100,200,400,700,1100,1600,2200,2900,3700,4500 };
 int enemy_create_speed; //3
 int enemy_fire_distance;  //250
 int enemy_fire_gap;   //2
-
-bool pausing = false;
-bool stop_pausing = false;
 
 Bullet *bullets[BULLETS_NUMBER];
 Bullet *my_bullets[MY_BULLETS_NUMBER];
@@ -54,7 +54,7 @@ void is_pause(sf::Event &event, sf::RenderWindow &window, sf::Clock &pause_clock
 	}
 }
 
-void mytank_move(sf::RenderWindow &window, sf::Event &event, sf::Sound &shotsound,sf::Clock &pause_clock) {
+void mytank_move(sf::RenderWindow &window, sf::Event &event, sf::Sound &shotsound, sf::Clock &pause_clock) {
 
 	tanks[0]->move_tank_bymouse_check();
 
@@ -97,7 +97,6 @@ void pausing_move(sf::RenderWindow &window, sf::Event &event, sf::Clock &pause_c
 	PAUSING_TEXT.setString("PAUSING");
 	window.draw(PAUSING_TEXT);
 }
-
 void enemy_tanks_move(sf::Clock &enemy_fire_clock, sf::Clock create_enemy_clock) {
 	sf::Time fire_gap = enemy_fire_clock.getElapsedTime();
 
@@ -146,9 +145,10 @@ void create_and_draw_shields(Shield &shield, sf::Sprite &map_sprite, sf::RenderW
 
 
 
-void draw_tanks_bullets_and_buff(sf::Clock &clock, sf::RenderWindow &window, sf::Sound &knocksound,sf::Clock pause_clock)
+void draw_tanks_bullets_buff_and_background(sf::Clock &clock, sf::RenderWindow &window, sf::Sound &knocksound, sf::Sprite background_sprite, sf::Clock pause_clock)
 {
-	window.clear(sf::Color(250, 250, 250));
+	window.clear(sf::Color(225, 225, 225));
+	window.draw(background_sprite);
 
 	if (buff != NULL) {
 		window.draw(*buff);
@@ -306,10 +306,6 @@ void all_check_collsion(Shield &shield, sf::Sound &boomsound, sf::Sound &knockso
 				if (tanks[j] != NULL)
 				{
 					tanks[i]->tank_collison(*tanks[j]);
-					if (tanks[j]->is_exist == false)
-					{
-						boomsound.play();
-					}
 				}
 			}
 		}
@@ -451,12 +447,12 @@ void Game::delete_game() {
 	current_score = (int)score;
 	if (current_score > highest_score) {
 		highest_score = current_score;
-		/*ofstream highest_score_txt("./resources/highest_score.txt");
+		ofstream highest_score_txt("./resources/highest_score.txt");
 		if (highest_score_txt.is_open())
 		{
-		highest_score_txt << std::to_string(highest_score);
-		highest_score_txt.close();
-		}*/
+			highest_score_txt << std::to_string(highest_score);
+			highest_score_txt.close();
+		}
 	}
 
 	score = 0;
@@ -487,19 +483,24 @@ void Game::delete_game() {
 	}
 }
 
-void Game::next_game(sf::RenderWindow &window, int level) {
+void Game::next_game(sf::RenderWindow &window, int level, bool score_flag) {
+
+	if (score_flag == true) {
+		score = previous_score;
+	}
+	previous_score = score;
 
 	game_over = false;
 
 	current_score = (int)score;
 	if (current_score > highest_score) {
 		highest_score = current_score;
-		/*ofstream highest_score_txt("./resources/highest_score.txt");
+		ofstream highest_score_txt("./resources/highest_score.txt");
 		if (highest_score_txt.is_open())
 		{
-		highest_score_txt << std::to_string(highest_score);
-		highest_score_txt.close();
-		}*/
+			highest_score_txt << std::to_string(highest_score);
+			highest_score_txt.close();
+		}
 	}
 
 	//score = 0;
@@ -544,26 +545,30 @@ void Game::next_game(sf::RenderWindow &window, int level) {
 	}
 	string current_score_str = "Score: ";
 	string highest_score_str = "Highest Score: ";
-	/*ifstream highest_score_txt("./resources/highest_score.txt");
+	ifstream highest_score_txt("./resources/highest_score.txt");
 	if (highest_score_txt.is_open())
 	{
 		char buffer[10];
 		highest_score_txt.getline(buffer, 10);
 		highest_score = atoi(buffer);
-	}*/
+	}
 	string start_game_str = "Click Here to Start !";
+	string continue_game_str = "Click Here to Continue!";
 	string level_str = "Level " + to_string(level) + "(" + "Goal : " + to_string(goal[level]) + ")";
 	sf::Text current_score_text(current_score_str + std::to_string(current_score), font, 50);
 	sf::Text highest_score_text(highest_score_str + std::to_string(highest_score), font, 50);
 	sf::Text start_game_text(start_game_str, font, 60);
+	sf::Text continue_game_text(continue_game_str, font, 60);
 	sf::Text level_text(level_str, font, 30);
 
 	current_score_text.setPosition(WIDTH / 2 - 200, HEIGHT / 2 - 100);
 	highest_score_text.setPosition(WIDTH / 2 - 200, HEIGHT / 2 - 50);
 	start_game_text.setPosition(WIDTH / 2 - 250, HEIGHT / 2 + 100);
+	continue_game_text.setPosition(WIDTH / 2 - 250, HEIGHT / 2 + 100);
 	level_text.setPosition(WIDTH / 2 - 150, HEIGHT / 2 + 50);
 
 	start_game_text.setFillColor(sf::Color::Black);
+	continue_game_text.setFillColor(sf::Color::Black);
 	highest_score_text.setFillColor(sf::Color::Black);
 	current_score_text.setFillColor(sf::Color::Black);
 	level_text.setFillColor(sf::Color::Red);
@@ -571,7 +576,14 @@ void Game::next_game(sf::RenderWindow &window, int level) {
 	window.clear(sf::Color::White);
 
 	window.draw(mouse_sprite);
-	window.draw(start_game_text);
+	if (level == 0)
+	{
+		window.draw(start_game_text);
+	}
+	else
+	{
+		window.draw(continue_game_text);
+	}
 	window.draw(current_score_text);
 	window.draw(highest_score_text);
 	window.draw(level_text);
@@ -613,7 +625,6 @@ void Game::next_game(sf::RenderWindow &window, int level) {
 
 	}
 }
-
 void Game::start_game(sf::RenderWindow &window) {
 
 	sf::Texture mouse_texture;
@@ -697,8 +708,8 @@ void Game::start_game(sf::RenderWindow &window) {
 }
 
 
-
 bool Game::play_game(sf::RenderWindow &window, int level) {
+
 
 	//difficulty
 	if (level == 0) {
@@ -709,11 +720,53 @@ bool Game::play_game(sf::RenderWindow &window, int level) {
 	}
 	else if (level == 1) {
 		enemy_create_speed = 2; //3
-		enemy_fire_distance = 500;  //250
+		enemy_fire_distance = 260;  //250
 		enemy_fire_gap = 2;   //2
 
 	}
 	else if (level == 2) {
+		enemy_create_speed = 2; //3
+		enemy_fire_distance = 270;  //250
+		enemy_fire_gap = 2;   //2
+
+	}
+	else if (level == 3) {
+		enemy_create_speed = 2; //3
+		enemy_fire_distance = 280;  //250
+		enemy_fire_gap = 2;   //2
+
+	}
+	else if (level == 4) {
+		enemy_create_speed = 2; //3
+		enemy_fire_distance = 290;  //250
+		enemy_fire_gap = 2;   //2
+
+	}
+	else if (level == 5) {
+		enemy_create_speed = 2; //3
+		enemy_fire_distance = 300;  //250
+		enemy_fire_gap = 2;   //2
+
+	}
+	else if (level == 6) {
+		enemy_create_speed = 2; //3
+		enemy_fire_distance = 350;  //250
+		enemy_fire_gap = 2;   //2
+
+	}
+	else if (level == 7) {
+		enemy_create_speed = 2; //3
+		enemy_fire_distance = 400;  //250
+		enemy_fire_gap = 2;   //2
+
+	}
+	else if (level == 8) {
+		enemy_create_speed = 2; //3
+		enemy_fire_distance = 500;  //250
+		enemy_fire_gap = 2;   //2
+
+	}
+	else if (level == 9) {
 		enemy_create_speed = 2; //3
 		enemy_fire_distance = 1000;  //250
 		enemy_fire_gap = 1;   //2
@@ -761,25 +814,48 @@ bool Game::play_game(sf::RenderWindow &window, int level) {
 	sf::Clock buff_create_clock;
 	sf::Clock score_clock;
 	sf::Clock pause_clock;
+
 	//score
 	sf::Font font;
 	if (!font.loadFromFile("./resources/sansation.ttf")) {
-		return false;
+		return 0;
 	}
 	string score_str = "Score: ";
 	string life_str = "Life: ";
 	string pausing_str = "Take A Break...";
 	sf::Text score_text(score_str + "0", font, 50);
 	sf::Text life_text(life_str + "0", font, 30);
-	sf::Text pausing_text(pausing_str, font, 70);
 	score_text.setFillColor(sf::Color::Black);
 	life_text.setFillColor(sf::Color::Black);
-	pausing_text.setColor(sf::Color::Black);
 	life_text.setPosition(0, 50);
+	sf::Text pausing_text(pausing_str, font, 70);
+	pausing_text.setColor(sf::Color::Black);
 	pausing_text.setPosition(200, 250);
 
 
+	sf::Texture background_texture;
+	switch (level) {
+	case 0:
+	case 1:
+	case 2:
+		background_texture.loadFromFile("./resources/background1.jpg");
+		break;
+	case 3:
+	case 4:
+	case 5:
+		background_texture.loadFromFile("./resources/background2.jpg");
+		break;
+	case 6:
+	case 7:
+	case 8:
+		background_texture.loadFromFile("./resources/background3.jpg");
+		break;
+	default:
+		break;
+	}
 
+
+	sf::Sprite background_sprite(background_texture);
 
 	//create my tank
 	tanks[0] = new Tank();
@@ -789,6 +865,7 @@ bool Game::play_game(sf::RenderWindow &window, int level) {
 	my_gun_texture.loadFromFile("./resources/my_gun.png");
 	tanks[0]->setTexture(&my_tank_texture);
 	tanks[0]->gun.setTexture(my_gun_texture);
+
 
 
 	/*
@@ -803,7 +880,7 @@ bool Game::play_game(sf::RenderWindow &window, int level) {
 	sf::Texture shield_texture;
 
 	if (!shield_texture.loadFromFile("./resources/shield.jpg")) {
-		return false;
+		return 0;
 	}
 
 	sf::Sprite map_sprite(shield_texture);
@@ -815,6 +892,8 @@ bool Game::play_game(sf::RenderWindow &window, int level) {
 
 	while (window.isOpen() && (!game_over) && ((int)score < goal[level]))
 	{
+
+
 		if (pausing == false)
 		{
 			create_enemy_tanks(create_enemy_clock, shield);
@@ -832,7 +911,7 @@ bool Game::play_game(sf::RenderWindow &window, int level) {
 
 
 
-			draw_tanks_bullets_and_buff(clock, window, knocksound,pause_clock);
+			draw_tanks_bullets_buff_and_background(clock, window, knocksound, background_sprite ,pause_clock);
 
 			create_and_draw_shields(shield, map_sprite, window);
 
@@ -858,8 +937,6 @@ bool Game::play_game(sf::RenderWindow &window, int level) {
 			pausing_move(window, event, pause_clock);
 		}
 
-
-
 	}
 
 	//check pass
@@ -876,7 +953,116 @@ bool Game::play_game(sf::RenderWindow &window, int level) {
 
 
 
+void Game::pass_game(sf::RenderWindow &window) {
 
+	game_over = false;
+
+	current_score = (int)score;
+	if (current_score > highest_score) {
+		highest_score = current_score;
+		ofstream highest_score_txt("./resources/highest_score.txt");
+		if (highest_score_txt.is_open())
+		{
+			highest_score_txt << std::to_string(highest_score);
+			highest_score_txt.close();
+		}
+	}
+
+	//score = 0;
+
+	for (int i = 0; i < TANKS_NUMBER; i++) {
+		if (tanks[i] != NULL) {
+			delete tanks[i];
+		}
+		tanks[i] = NULL;
+	}
+
+	for (int i = 0; i < BULLETS_NUMBER; i++) {
+		if (bullets[i] != NULL) {
+			delete bullets[i];
+		}
+		bullets[i] = NULL;
+	}
+	for (int i = 0; i < MY_BULLETS_NUMBER; i++) {
+		if (my_bullets[i] != NULL) {
+			delete my_bullets[i];
+		}
+		my_bullets[i] = NULL;
+	}
+
+
+	if (buff != NULL) {
+		delete buff;
+		buff = NULL;
+	}
+
+	sf::Texture mouse_texture;
+	sf::Sprite mouse_sprite;
+	mouse_texture.loadFromFile("./resources/introduction.png");
+	mouse_sprite.setTexture(mouse_texture);
+	mouse_sprite.setPosition(10, 10);
+
+
+	sf::Event event;
+	sf::Font font;
+	if (!font.loadFromFile("./resources/sansation.ttf")) {
+		return;
+	}
+	string current_score_str = "Score: ";
+	string highest_score_str = "Highest Score: ";
+	ifstream highest_score_txt("./resources/highest_score.txt");
+	if (highest_score_txt.is_open())
+	{
+		char buffer[10];
+		highest_score_txt.getline(buffer, 10);
+		highest_score = atoi(buffer);
+	}
+	string start_game_str = "Congratulations !";
+	sf::Text current_score_text(current_score_str + std::to_string(current_score), font, 50);
+	sf::Text highest_score_text(highest_score_str + std::to_string(highest_score), font, 50);
+	sf::Text start_game_text(start_game_str, font, 60);
+
+	current_score_text.setPosition(WIDTH / 2 - 200, HEIGHT / 2 - 100);
+	highest_score_text.setPosition(WIDTH / 2 - 200, HEIGHT / 2 - 50);
+	start_game_text.setPosition(WIDTH / 2 - 250, HEIGHT / 2 + 100);
+
+	start_game_text.setFillColor(sf::Color::Black);
+	highest_score_text.setFillColor(sf::Color::Black);
+	current_score_text.setFillColor(sf::Color::Black);
+
+	window.clear(sf::Color::White);
+
+	window.draw(mouse_sprite);
+	window.draw(start_game_text);
+	window.draw(current_score_text);
+	window.draw(highest_score_text);
+
+	window.display();
+
+	bool flag = true;
+
+	while (window.isOpen() && flag) {
+		while (window.pollEvent(event))
+		{
+			bool close = (event.type == sf::Event::Closed);
+			//≈–∂œ «∑Ò∞¥ESC
+			bool escape = (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape);
+			if (close || escape)
+				window.close();
+
+
+			if (event.type == sf::Event::MouseButtonPressed)
+			{
+				if (event.mouseButton.button == sf::Mouse::Left)
+				{
+					flag = false;
+					break;
+				}
+			}
+		}
+
+	}
+}
 
 
 Game::Game() {

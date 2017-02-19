@@ -14,6 +14,8 @@
 #define WIDTH 800
 #define HEIGHT 600
 
+#define MAX_LEVEL 10
+
 #define BULLETS_NUMBER 50
 #define MY_BULLETS_NUMBER 5
 #define TANKS_NUMBER 4
@@ -29,8 +31,10 @@ public:
 	bool play_game(sf::RenderWindow &window, int level);
 	void start_game(sf::RenderWindow &window);
 	void delete_game();
-	void next_game(sf::RenderWindow &window, int level);
+	void next_game(sf::RenderWindow &window, int level, bool score_flag);
+	void pass_game(sf::RenderWindow &window);
 
+	float previous_score = 0;
 private:
 
 
